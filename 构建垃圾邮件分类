@@ -1,0 +1,29 @@
+#1.1：了解数据集
+#是2列没有命名数据集
+#第一列有两个值："ham",表示信息不是垃圾信息，以及"spam",表示信息是垃圾信息
+#第二列是被分类的信息的文本内容
+#说明：
+#使用read_table方法可以讲数据集导入pandas 数据帧。因为这是一个用制表符分隔的数据集，因此我们将使用"\t"作为"sep"参数的值，
+#表示这种分隔格式
+#此外，通过为read_table()的"names"参数制定列表["label","sms_message"],重命名列
+#用新的列明输出数据帧的前五个值
+
+import pandas as pd
+#Dataset from -http://archive.ics.uci.edu/ml/datasets/SMS+Spam+Collection
+df=pd.read_table("smsspamcollection/SMSSpamCollection",
+                 sep="\t",
+                 header=None,
+                 names=["labels","sms_message"])
+#Output printing out first 5 columns
+df.head()
+
+#1.2数据预处理
+#了解了数据结构之后，现将标签转换为二元变量，0表示"ham"，1表示"spam",方便计算
+#原因在于scikit-learn处理的输入方式只有数字，如果标签值保留为字符串，scikit-learn会自己转换为未知的浮点值。
+#说明
+#使用映射方法将”标签“列中的值转换为数字值，{"ham":0,"spam":1}这样将"ham"值映射为0，将"spam"值映射为1
+#此外，为了知道正在处理的数据集有多大，使用”shape“输出行数和列数
+
+df["label"]=df.label.map({"ham":0,"spam":1})
+print(df.shape)
+df.head
