@@ -1,0 +1,9 @@
+import numpy as np
+#Setting the random seed,feel free to change it and see different solutions.
+np.random.seed(42)
+def setpFunction(t):
+    if t>=0:
+        return 1
+    return 0
+def prediction(X,W,b):
+    return setpFunction((np.matmul(X,w)+b)[0])
