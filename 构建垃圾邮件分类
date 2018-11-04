@@ -143,4 +143,245 @@ frequency_matrix
 #有几种方式可以减轻这种情况。一种方式是使用stop_words参数并将其值设为english。这样会自动忽略scikit-learn中内置英语停用词列表中出现的单词。所有
 
 
+#3.1训练集和测试集
+#知道如何处理Bag of Words问题，现在回到数据集并继续分析工作。第一步是将数据集拆分为训练集和测试集，以便稍后测试模型。
+#说明
+#通过在sklearn中使用train_test_split方法，将数据集拆分为训练集和测试集。使用以下变量拆分数据：
+# X_train是 "sms_message"列的训练数据
+# y_train是 "label"列的训练数据
+# X_test 是 "sms_message"列的测试数据
+# y_test 是 "label" 列的测试数据，输出每个训练数据和测试数据的行数。
+#NOTE:sklearn.cross_validation will be deprecated soon to sklearn.model_selection
+#split into training and testing sets
+#USE from sklearn.model_selection import train_test_split to avoid seeing deprecation warning.
+from sklearn.cross_validation import train_test_split
+X_train,X_test,y_train,y_test=train_test_split(df["sms_message"],
+                                               df["label"],
+                                               random_state=1)
+print("Number of rows in the total set:{}".format(df.shape[0]))
+print("Number of rows in the training set:{}".format(X_train.shape[0]))
+print("Number of rows in the test set:{}".format(X_test.shape[0]))
+
+
+
+#3.2对数据集应用Bag of Words 流程
+#现在已经拆分了数据，下个目标是按照第二部：Bag of words 中的步骤操作，并将数据转换为期望的矩阵格式。为此，我们将像之前一样使用CountVectorizer()
+#首先，需要对CountVectorizer()拟合训练数据（X_train）并返回矩阵
+#其次，需要转换测试数据（X_test）以返回矩阵
+#注意：
+#X_train是数据集中"sms_message"列的训练数据，将使用此数据训练模型
+#X_test是”sms_message“列的测试数据，我们将使用该数据（转换为矩阵后）进行预测。然后在后面的步骤中将这些预测与y_test进行比较
+
+#Instantiate the CountVectorizer method
+count_vector=COuntVectorizer()
+
+#Fit the training data and then return the matrix
+training_data=count_vector.fit_transform(X_train)
+
+#Transform testing data and return the matrix.NOte we are not fitting the testing data into the CountVectorizer()
+testing_data=count_vector.transform(X_test)
+
+#4.1从头实现贝叶斯定理
+#数据集已经是所需的格式，现在可以进行任务的下一步，即研究用来做出预测并将信息分类为垃圾信息或非来及信息的算法。
+#贝叶斯定理与相关事件有关的其他的概率计算该时间发生的概率。它由先验概率（已经知道的概率或提供给我们的概率）和后验概率（希望用先验部分计算的概率）组成
+
+#加黑色要根据某人接受糖尿病检测后获得阳性结果计算此人有糖尿病的概率。在医学领域，此类概率非常重要。
+#我们假设：
+#P(D)是某人环游糖尿病的概率，值为0.01，换句话说，普通人群中有1%的人患有糖尿病。
+#P(Pos)：是获得阳性测试结果的概率
+#P（Neg）:是获得阴性测试结果的概率
+#P(Pos|D):是本身有糖尿病并且获得阳性测试结果的概率，值为0.9，换句话说，该测试在90%的情况下是正确的。亦成为敏感性或真正例率
+#P(Neg|~D)：是本身没有糖尿病并且获得阴性测试结果的概率，值为0.9，因此在90%的情况下是正确的，亦成为特异值或真负例率
+#则beiyes公式为    P(A|B)=P(B|A)P(A)/P(B)
+#P(A):A 独立发生的先验概率。在我们的示例中为P(D)，该值已经提供给我们了。
+#P(B)：B独立发生的先验概率。在我们的示例中为P(Pos)
+#P(A|B)：在给定B的情况下A发生的后验概率，在我们的示例中P(D|Pos)，即某人的测试结果为阳性时患有糖尿病的概率。这是我们需要计算的值。
+#P(B|A)：在给定A的情况下B可能发生的概率。在我们的示例中为P(Pos|D)，该值已经提供给我们了。
+#将这些值带入beiyes定理公式中：
+P(D|Pos)=P(D)*P(Pos|D)/P(Pos)
+#获得阳性测试结果P(Pos)的概率可以使用敏感性sensitiity和特异性specificity来计算，如下所示：
+P(Pos)=[P(D)*Sensitivity]+[P(~D)*(1-Specificity)]
+
+#Instructions:
+#Calculate probability of getting a positive test tesult,P(Pos)
+#P(D)
+p_diabetes=0.01
+#p(~D)
+p_no_diabetes=0.99
+#Sensitivity or P(Pos|D)
+p_pos_diabetes=0.9
+#specificity or P(Neg|~D)
+p_neg_no_diabetes=0.9
+#P(Pos)
+p_pos=(p_diabetes*p_pos_diabetes)+(p_no_diabetes*(1-p_neg_no_diabetes))
+print("The probability of getting a positive test result P(Pos) is :{}".format(p_pos))
+
+#我们可以利用所有这些信息计算后验概率，如下所示：某人测试结果为阳性时环游糖尿病的概率为：
+#P(D|Pos)=(P(D)*Sensitivity)/P(Pos)
+#某人测试结果为阳性时没有糖尿病的概率为：
+#P(~D|Pos)=(P(~D)*(1-specificity))/P(Pos)
+#后验概率和将始终为1
+#Instructions:
+#Compute the probability of an individual having diabetes,given that,that individual got a positive test result.
+
+#P(D|Pos)
+p_diabetes_pos=(p_diabetes*p_pos_diabetes)/p_pos
+print("Probability of an individual having diabetes,given that individual got a positive test result is:".format(p_diabetes_pos))
+
+#Instructions:
+#Compute the probability of an individual not having diabetes,given that,that individual got a positive test result
+#In other words,compute P(~D|Pos)
+#The formula is: P(~D|Pos)=P(~D)*P(Pos|~D)/P(Pos)
+#Note that P(Pos|~D) canbe computed as 1-P(Neg|~D)
+#Therefore: P(Pos|~D)=p_pos_no_diabetes=1-0.9=0.1
+#P(Pos|~D)
+p_pos_no_diabetes=0.1
+#P(~D|Pos)
+p_no_diabetes_pos=(p_no_diabetes*p_pos_no_diabetes)/p_pos
+print("Probability of an individual not having diabetes,given that individual got a positive test result is:".formate(p_no_daibetes_pos))
+
+#朴素beiyes中的朴素一词实际上是指，算法在进行预测时使用的特征相互之间是独立的，但实际上并非始终这样。在我们的糖尿病示例中，我们只考虑了一个特征，即测试结果。
+#假设我们添加了另一个特征”锻炼“。假设此特征具有二元值0和1，0表示某人一周的锻炼时间不超过2天，1表示某人一周的锻炼时间超过2天。如果我们要
+#同时使用这两个特征（即测试结果和”锻炼“特征的值）计算最终概率，beiyes定理将不可行，朴素beiyes是定理的一种延伸，假设所有特征相互是独立的
+
+#4.2从头实现朴素beiyes
+#Jill Stein 提到”自由“的概率：0.1------>P(F|J)
+#Jill Stein 提到”移民“的概率：0.1------>P(I|J)
+#Jill Stein 提到”环境“的概率：0.8------>P(E|J)
+
+#Gary Johnson 提到”自由“的概率：0.7---->P(E|G)
+#Gary Johnson 提到”移民“的概率：0.2---->P(I|G)
+#Gary Johnson 提到”环境“的概率：0.1---->P(E|G)
+
+#假设Jill Stein 发表演讲的概率P(J)是0.5，Gary Johnson也是 P(G)=0.5
+#此时，要计算Jill Stein提到 ”自由“和”移民“的概率：
+      P(y|x1,...,xn)=P(y)P(x1,...,xn|y)/P(x1,...,xn)
+#该公式中，y是分类变量，即候选人的姓名，x1到xn是特征向量，即单个单词，该定理假设每个特征向量或单词（xi）相互之间是独立的
+#为了详细讲解该公式，需要计算以下后验概率
+#P(J|F,I):Jill Stein 提到”自由“和”移民“的概率
+#根据上述公式，可以进行以下计算：P(G|F,I)=(P(G)*P(F|G)*P(I|G))/P(F,I)
+
+#P(J)
+p_j=0.5
+
+#P(F|J)
+p_j_f=0.1
+
+#P(I|J)
+p_j_i=0.1
+
+#p_j_text=p_j*p_j_f*p_j_i
+print(p_j_text)
+
+#P(G)
+p_g=0.5
+
+#P(F|G)
+p_g_f=0.7
+
+#P(I|G)
+p_g_i=0.2
+
+p_g_text=p_g*p_g_f*p_g_i
+print(p_g_text)
+
+p_f_i=p_j_text + p_g_text
+print("Probability of words freedom and immigration being said are:".format(p_f_i))
+
+p_j_fi=p_j_text/p_f_i
+print("The probability of Jill Stein saying the words Freedom and Immigration:".format(p_j_fi))
+
+p_g_fi=p_g_text/p_f_i
+print("The probability of Gary Johnson saying the words Freedom and Immigration:".format(p_g_fi))
+
+5.使用scikit-learn实现朴素beiyes
+from sklearn.naive_bayes import MultinomialNB
+naive_bayes=NultinomialNB()
+naive_bayes.fit(training_data,y_train)
+predictions=naive_bayes.predict(testing_data)
+
+6评估模型
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+print('Accuracy score: ', format(accuracy_score(y_test,predictions)))
+print('Precision score: ', format(precision_score(y_test,predictions)))
+print('Recall score: ', format(recall_score(y_test,predictions)))
+print('F1 score: ', format(f1_score(y_test,predictions)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
