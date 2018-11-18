@@ -1,0 +1,7 @@
+from sklearn import datasets,mixture
+#Load dataset
+X=datasets.load_iris().data[:10]
+#Specify the parameters for the clustering
+gmm=mixture.GaussianMixture(n_components=3)
+gmm.fit(X)
+clustering=gmm.predict(X)
