@@ -63,11 +63,7 @@ df.head()
  X=vectorizer.fit_transform(documents)
  print(vectorizer.get_feature_names())
  print(X.toarray())
- from sklearn.feature_extraction.text import CountVectorizer
- Vectorizer=CountVectorizer()
- X=Vectorizer.fit_transform(documents)
- print(Vectorizer.get_feature_names())
- print(X>toarray())
+
  #说明
  #将文档集合中的所有字符串转换成小写形式，将他们保存到焦作"lower_case_documents"的列表中，可以使用loer()方法
  #在Python中将字符串转换成小写形式
@@ -79,10 +75,7 @@ lower_case_documents=[]
 for i in documents:
      lower_case_documents.append(i.lower())
  print(lower_case_documents)
- lower_case_documents=[]
- for i in documents:
-     lower_case_documents.append(i.lower())
-print(lower_case_documents)
+ 
 # 第二部，删除所有标点符号
 #删除文档集合中的字符串中的所有标点。将他们保存在焦作"sams_punctuation_documents"的列表中
 sans_punctuation_documents=[]
@@ -91,9 +84,7 @@ for i in lower_case_documents:
     sana_punctuation_documents.append(i.translate(str.maketrans("","",string.punctuation)))
 print(sans_punctuation_documents)
 sans_punctuation_documents=[]
-import string
-for i in lower_case_documents:
-    sans_punctuation_documtments.append(i.translate(str.maketrans("","",string.punctuation)))
+
 #第三部，令牌华
 #令牌华文档集合中的句子是指使用分隔符将句子拆分成单个单词。分隔符指定了我们将使用哪个字符来表示单词的开始和结束为止
 #（例如，可以使用一个空格作为文档结合的单词分隔符）
@@ -102,10 +93,7 @@ preprocessed_documents=[]
 for i in sans_punctuation_documents:
     preprocessed_documents.append(i.split(" "))
 print(preprocessed_documents)
-preprocessed_documents=[]
-for i in sans_punctuation_documents:
-    preprocessed_documents.append(i.split(" "))
-print(preprocessed_documents)
+
 #第四步计算频率
 #获得所需格式的文档集合，现在可以数出每个单词在文档集合的每个文档中出现的次数了。为此，将使用Python  collections库中的Counter方法
 #Counter会数出列表中每项的出现次数，并返回一个字典，键是被数的项目，相应的值是该项目在列表中的计数
@@ -118,11 +106,8 @@ for i in preprocessed_documents:
     frequency_count=Counter(i)
     frequency_list.append(frequency_count)
 pprint.pprint(frequency_list)
-frequency_list=[]
-import collecions import Counter
-for i in preprocessed_documents:
-    frequency_count=Counter(i)
-    frequency_list.append(frequency_count)
+
+
     #2.3在scikit-learn中实现Bag of Words
     '''
     Here we will look to create a frequency matrix on a smaller document set to make sure we understand how 
@@ -177,22 +162,16 @@ frequency_matrix
 #y_train是label列的训练数据
 #X_test是sms_message列的测试数据
 #y_test是label列的测试数据。数出每个训练数据和测试数据的行数
-'''
-NOTE:sklearn.cross_validation import train_test_split
-'''
+
+from sklearn.cross_validation import train_test_split
+
 X_train,X_test,y_train,y_test=train_test_split(df["sms_message"],
                                                df["label"],
                                                random_state=1)
 print("Number of rows in the total set:{}".format(df.shape[0]))
 print("Number of rows in the training set:{}".format(X_train.shape[0]))
 print("Number of rows in the test set:{}".format(X_test.shape[0]))
-from skearn.cross_alidation import train_test_split
-X_train,X_test,y_train,y_test=train_test_split(df["sms_message"],
-                                               df["label"],
-                                               random_state=1)
-print("Number of rows in the total set:{}".format(df.shape[0]))
-print("Number of rows in the training set:{}".format(X_trian.shape[0]))
-print("Number of rows in the test set:{}".format(X_test.shpae[0]))
+
 #3.2对数据集应用Bag of Words流程
 #数据已经拆分了，下个目标是按照第二部：Bag of words 中的步骤操作，并将数据转换为期望的矩阵格式。为此，将像之前一样使用CountVectorizer()
 #首先，需要对CountVectorizer()拟合训练数据X_train并返回矩阵
@@ -208,5 +187,44 @@ testing_data=count_vector.transform(X_test)
 count_vector=CountVectorizer()
 training_data=count_vector.fit_trainsform(X_train)
 testing_data=count_vector.transform(X_test)
-第4.1步，从头实现byies定理
-
+#第4.1步，从头实现byies定理
+#数据集已经是希望的格式，现在可以进行任务的下一步了，即研究用来做出预测并将信息分类为垃圾信息或非垃圾信息的算法，记得在
+#该项目的开头，简要介绍了贝叶斯定理，现在深入讲解该定理。通俗的说，贝叶斯定理根据与相关事件有关的其他事件概率计算该事件
+#的发生概率，它由先验概率（知道的概率或者提供的概率）和后验概率（希望用先验部分计算的概率）组成
+#用一个简单的示例从头实现贝叶斯定理，假设要根据某人接受糖尿病检测后获得阳性结果计算此人有糖尿病的概率。
+#在医学领域，此类概率非常重要，因为他们涉及生死情况
+#假设
+#P(D)是某人患有糖尿病的概率，值为0.01，换句话说，普通人群中有1%的人患有糖尿病
+#P(Pos)是获得阳性测试结果的概率
+#P(Neg)是获得阴性测试结果的概率
+#P(Neg|D)是本身有糖尿病并且获得阳性测试结果的概率，值为0/9，换句话说，该测试90%的情况下是正确的，亦成为敏感性或真正利率
+#P(Neg|D~)是本身没有糖尿病并且获得阴性测试结果的概率，值也为0.9，因此在90%的情况下是正确的。亦成为特异性或真负利率
+P(A|B)=P(B|A)P(A)/P(B)
+#P(A)：A独立发生的先验概率，在我们的示例中为P(D)，该值已经提供给我们了
+#P(B)：B独立发生的先验概率，在我们的示例中为P(POS）
+#P(A|B)：在给定B的情况下A发生的后验概率，在我们的示例中为P(D|POS)，即某人的测试结果为阳性时患有糖尿病的概率，这是要计算的值
+#P(B|A)：在给定A的情况下B可能发生的概率，在我们的示例中为P(POS|D)，该值已经提供了
+#将这些值带入贝叶斯定理公式中
+P(D|POS)=P(D)*P(POS|D)/P(POS)
+#获得阳性测试结果P(POS)的概率可以使用敏感性和特异性来计算
+P(POS)=[P(D)*Sensitivity]+[P(~D)*(1-Specificity)]
+'''
+Instructions:
+Calculate probability of getting a positive test result,p(POS)
+'''
+p_diabetes=0.01
+p_no_diabetes=0.99
+p_pos_diabetes=0.9
+p_neg_no_diabetes=0.9
+p_pos=(p_diabetes*p_pos_diabetes)+(p_no_diabetes*(1-p_neg_no_diabetes))
+print("The probability of getting a positive test result P(POS) is :{}".format(p_pos))
+p_diabetes
+P(D|POS)=(P(D*Sensitivity))/P(Pos)
+P(~D|POS)=(P(~D)*(1-Specificity))/P(POS)
+#后验概率的和将始终未1
+'''
+Instructions:
+  Coompute the probability of an individual having diabetes,given that,that individual got a positive test result
+  In other words,compute P(D|Pos)
+  The formula is:P(D|Pos)=(P(D)*P(Pos|D)/P(Pos))
+    '''
